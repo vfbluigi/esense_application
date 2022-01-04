@@ -1,21 +1,34 @@
 import 'package:esense_application/screens/ingame/models/direction.dart';
 import 'package:flutter/material.dart';
 
-class GivenDirectionText extends StatelessWidget {
-  const GivenDirectionText({ Key? key, required this.direction }) : super(key: key);
+class DirectionText extends StatelessWidget {
+  const DirectionText({ Key? key, this.caption = '', required this.direction, this.color = Colors.blue }) : super(key: key);
 
   final DirectionObject direction;
+  final String caption;
+  final MaterialColor color;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Text(
-        direction.directionString,
-        style: const TextStyle(
-            color: Colors.blue,
-            fontSize: 40.0,
-        ),
-      )      
+    return SizedBox(
+      width: 150,
+      child: Column(
+        children: [
+          Text(
+            caption,
+            style: const TextStyle(
+              fontSize: 40.0,
+              color: Colors.orange,
+            ),
+          ),
+          Text(
+            '$direction',
+            style: TextStyle(
+                fontSize: 40.0,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

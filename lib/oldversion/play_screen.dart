@@ -2,15 +2,13 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:esense_application/screens/ingame/models/direction.dart';
-import 'package:esense_application/screens/ingame/widgets/current_direction.dart';
+import 'package:esense_application/oldversion/current_direction.dart';
 import 'package:esense_application/screens/ingame/widgets/given_direction.dart';
 import 'package:esense_application/screens/ingame/widgets/score.dart';
 import 'package:flutter/material.dart';
 
 import 'package:esense_flutter/esense.dart';
 import 'dart:async';
-
-import '../ingame_screen.dart';
 
 class PlayScreen extends StatefulWidget {
   const PlayScreen({
@@ -139,7 +137,7 @@ class _PlayScreenState extends State<PlayScreen> {
           ),
           Row(
             children: [
-              GivenDirectionText(direction: currentGivenDirection),
+              DirectionText(direction: currentGivenDirection),
               Text(currentSensorDirection.toShortString()),
               CurrentDirection(title:_event, x: x, y: y, z: z),
             ],

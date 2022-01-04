@@ -12,14 +12,12 @@ class Score extends StatelessWidget {
           const Text(
             'SCORE',
             style: TextStyle(
-              color: Colors.blue,
               fontSize: 40.0,
             )
           ),
           Text(
             '$counter',
             style: const TextStyle(
-              color: Colors.blue,
               fontSize: 80.0,
             )
           ),

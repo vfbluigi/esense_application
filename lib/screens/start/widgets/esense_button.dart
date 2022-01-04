@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 class ESenseButton extends StatelessWidget {
   const ESenseButton({ Key? key, required this.nextRoute, required this.title }) : super(key: key);
 
-  final Widget nextRoute;
+  final String nextRoute;
   final String title;
 
   @override
   Widget build(BuildContext context) {
     return TextButton(
       style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all(Colors.blue),
+        backgroundColor: MaterialStateProperty.all(Colors.blue.shade300),
         foregroundColor: MaterialStateProperty.all(Colors.white),
         shape: MaterialStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
@@ -23,9 +23,9 @@ class ESenseButton extends StatelessWidget {
         title,
         ),
       onPressed: () {
-        Navigator.push(
+        Navigator.pushNamed(
           context, 
-          MaterialPageRoute(builder:(context) => nextRoute),
+          nextRoute
         );
       },      
     );

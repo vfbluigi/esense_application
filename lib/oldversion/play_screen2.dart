@@ -1,18 +1,23 @@
 import 'dart:math';
 
 import 'package:esense_application/screens/ingame/models/direction.dart';
-import 'package:esense_application/screens/ingame/widgets/current_direction.dart';
+import 'package:esense_application/oldversion/current_direction.dart';
 import 'package:esense_application/screens/ingame/widgets/given_direction.dart';
 import 'package:esense_application/screens/ingame/widgets/score.dart';
 import 'package:esense_flutter/esense.dart';
 import 'package:flutter/material.dart';
 
-class PlayScreen2 extends StatelessWidget {
-  PlayScreen2({ Key? key, required this.event }) : super(key: key);
-
-  int _counter = 0;
+class PlayScreen2 extends StatefulWidget {
+  const PlayScreen2({ Key? key, required this.event }) : super(key: key);
 
   final SensorEvent? event;
+
+  @override
+  State<PlayScreen2> createState() => _PlayScreen2State();
+}
+
+class _PlayScreen2State extends State<PlayScreen2> {
+  int _counter = 0;
 
   final Random random = Random();
 
@@ -24,34 +29,50 @@ class PlayScreen2 extends StatelessWidget {
   ];
 
   DirectionObject currentGivenDirection = DirectionObject(Direction.empty);
+
   Direction currentSensorDirection = Direction.empty;
 
   void _setNewGivenDirection() {
-    int randomIndex = random.nextInt(3);
-    currentGivenDirection = directions[randomIndex];
+    setState(() {
+      int randomIndex = random.nextInt(3);
+      currentGivenDirection = directions[randomIndex];
+    });
   }
 
   void _evaluateSensorDirection() {
 
+    bool loop = true;
+
     double x = 0;
     double z = 0;
-    if(event != null) {
-      x = event!.gyro![0].toDouble();
-      z = event!.gyro![2].toDouble();
+
+    var newDirection = Direction.empty;
+
+    while(loop) {
+      if(widget.event != null) {
+        x = widget.event!.gyro![0].toDouble();
+        z = widget.event!.gyro![2].toDouble();
+      }
+
+      Direction newDirection = Direction.empty;
+      if (x > 5000) {
+        newDirection = Direction.right;
+        loop = false;
+      } else if (x < -5000) {
+        newDirection = Direction.left;
+        loop = false;
+      } else if (z > 5000) {
+        newDirection = Direction.down;
+        loop = false;
+      } else if (z < -5000) {
+        newDirection = Direction.up;
+        loop = false;
+      }
     }
 
-    Direction newDirection = Direction.empty;
-    if (x > 5000) {
-      newDirection = Direction.right;
-    } else if (x < -5000) {
-      newDirection = Direction.left;
-    } else if (z > 5000) {
-      newDirection = Direction.down;
-    } else if (z < -5000) {
-      newDirection = Direction.up;
-    }
-
-    currentSensorDirection = newDirection;
+    setState(() {
+      currentSensorDirection = newDirection;
+    });
   }
 
   void _incrementCounter() {
@@ -79,7 +100,7 @@ class PlayScreen2 extends StatelessWidget {
           child: Text('Test')),
           Row(
             children: [
-              GivenDirectionText(direction: currentGivenDirection),
+              DirectionText(direction: currentGivenDirection),
               Text(currentSensorDirection.toShortString()),
             ],
           ),

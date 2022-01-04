@@ -2,8 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:esense_application/screens/ingame/models/direction.dart';
-import 'package:esense_application/screens/ingame/screens/play_screen.dart';
-import 'package:esense_application/screens/ingame/widgets/current_direction.dart';
+import 'package:esense_application/oldversion/current_direction.dart';
 import 'package:esense_application/screens/ingame/widgets/given_direction.dart';
 import 'package:esense_application/screens/ingame/widgets/score.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +48,7 @@ class _InGameScreenState extends State<InGameScreen> {
                 if (snapshot.hasData) {
                   switch (snapshot.data!.type) {
                     case ConnectionType.connected:
-                      return const PlayScreen();
+                      return Text('hi');
                     case ConnectionType.unknown:
                       _connectToESense();
                       return const Text("Connection: Unknown");

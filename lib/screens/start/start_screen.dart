@@ -1,7 +1,7 @@
 import 'package:esense_application/screens/esense/esense_chart.dart';
+import 'package:esense_application/screens/ingame/screens/connection_screen.dart';
 import 'package:esense_application/screens/ingame/screens/esense_screen.dart';
 import 'package:esense_application/screens/start/widgets/esense_button.dart';
-import 'package:esense_application/screens/start/widgets/start_button.dart';
 import 'package:flutter/material.dart';
 
 
@@ -12,30 +12,35 @@ class StartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('HEAD APP'),
+        title: const Text('HEADACHE'),
       ),
-      body : Padding(
-        padding: const EdgeInsets.all(60.0),
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 200.0,
+      body : Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(30.0),
+            child: Image.asset(
+              'assets/images/headache.png',
+              scale: 1.2,
             ),
-            Row(
-              children: [
-                Expanded(child: StartButton()),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 60),
+            child: Row(
+              children: const [
+                Expanded(child: ESenseButton(title: 'Start', nextRoute: '/streambuilder',)),
               ],
             ),
-            Row(
-              children: [
-                Expanded(child: ESenseButton(title: 'ESenseChart', nextRoute: ESenseChart(title: 'ESenseChart',),)),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 60),
+            child: Row(
+              children: const [
+                Expanded(child: ESenseButton(title: 'Work in Progress', nextRoute: '/connected',)),
               ],
             ),
-            Row(children: [
-              Expanded(child: ESenseButton(title: 'ESenseTest', nextRoute: ESenseScreen(),)),
-            ],)
-          ],
-        ),
+          ),
+          
+        ],
       ),
     );
   }

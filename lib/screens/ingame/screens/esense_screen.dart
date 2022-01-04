@@ -3,24 +3,28 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:esense_application/screens/ingame/models/direction.dart';
-import 'package:esense_application/screens/ingame/screens/play_screen2.dart';
+import 'package:esense_application/screens/ingame/screens/gameover_screen.dart';
+import 'package:esense_application/screens/ingame/widgets/direction_viewer.dart';
 import 'package:esense_application/screens/ingame/widgets/given_direction.dart';
+import 'package:esense_application/screens/ingame/widgets/rule_dialog.dart';
 import 'package:esense_application/screens/ingame/widgets/score.dart';
 import 'package:esense_flutter/esense.dart';
 import 'package:flutter/material.dart';
 
 class ESenseScreen extends StatefulWidget {
-  const ESenseScreen({Key? key}) : super(key: key);
+  ESenseScreen({Key? key, required this.connection}) : super(key: key);
+
+  ConnectionType connection;
 
   @override
   _ESenseScreenState createState() => _ESenseScreenState();
 }
 
 class _ESenseScreenState extends State<ESenseScreen> {
-  String _deviceStatus = '';
-  bool sampling = false;
+  final String _deviceStatus = '';
+  bool hasSampled = false;
   SensorEvent? _event;
-  bool connected = false;
+  bool needsValues = true;
 
   // the name of the eSense device to connect to -- change this to your own device.
   final String eSenseName = 'eSense-0864';
@@ -28,8 +32,7 @@ class _ESenseScreenState extends State<ESenseScreen> {
   @override
   void initState() {
     super.initState();
-    _connectToESense();
-    _listenToESense();
+    _startListenToSensorEvents();
   }
 
   @override
@@ -39,106 +42,80 @@ class _ESenseScreenState extends State<ESenseScreen> {
     }
   }
 
-  Future _listenToESense() async {
-    // if you want to get the connection events when connecting,
-    // set up the listener BEFORE connecting...
-    ESenseManager().connectionEvents.listen((event) {
-      // when we're connected to the eSense device, we can start listening to events from it
-      if (event.type == ConnectionType.connected) {
-
-        _startListenToSensorEvents();
-
-        setState(() {
-          _counter++;
-        });
-      }  
-
-      setState(() {
-        connected = false;
-        switch (event.type) {
-          case ConnectionType.connected:
-            _deviceStatus = 'connected';
-            connected = true;
-            break;
-          case ConnectionType.unknown:
-            _deviceStatus = 'unknown';
-            _connectToESense();
-            break;
-          case ConnectionType.disconnected:
-            _deviceStatus = 'disconnected';
-            _connectToESense();
-            break;
-          case ConnectionType.device_found:
-            _deviceStatus = 'device_found';
-            break;
-          case ConnectionType.device_not_found:
-            _deviceStatus = 'device_not_found';
-            _connectToESense();
-            break;
-        }
-      });
-    });
-  }
-
-  Future<void> _connectToESense() async {
-    await ESenseManager().disconnect();
-    bool hasSuccessfulConneted = await ESenseManager().connect(eSenseName);
-    print("hasSuccessfulConneted: $hasSuccessfulConneted");
-  }
 
   StreamSubscription? subscription;
   void _startListenToSensorEvents() async {
-    // subscribe to sensor event from the eSense device
-    subscription = ESenseManager().sensorEvents.listen((event) {
-      sleep(const Duration(milliseconds: 5));
 
-      setState(() {
-        _event = event;
-      });
-      _evaluateSensorDirection();
+    if(widget.connection != ConnectionType.connected) {
+      return;
+    }
+    
+    if (hasSampled) {
+      subscription?.cancel();
+      subscription = null;
+    }
+    setState(() {
+      hasSampled = true;
     });
 
-    setState(() {
-      sampling = true;
+
+    ESenseManager().setSamplingRate(10);
+
+
+    // subscribe to sensor event from the eSense device
+    subscription = ESenseManager().sensorEvents.listen((event) async {
+
+        if (needsValues) {
+          setState(() {
+            _event = event;
+          });
+          
+          _evaluateSensorDirection();
+        }
+
     });
   }
 
   void _pauseListenToSensorEvents() async {
     subscription?.cancel();
-    setState(() {
-      sampling = false;
-    });
   }
 
   @override
   void dispose() {
-    subscription?.cancel();
+    _pauseListenToSensorEvents();
     ESenseManager().disconnect();
     super.dispose();
   }
 
-  int _counter = 0;
+  void _restart() {
+    setState(() {
+      currentSensorDirection = Direction.empty;
+      backgroundColor = null;
+      _score = 0;
+      directionHandler.reset();
+      needsValues = true;
+    });
+
+    _startListenToSensorEvents();
+  }
+
+
+
+
+  int _score = 0;
+  int _highscore = 0;
 
   final Random random = Random();
 
-  final List<DirectionObject> directions = [
-    DirectionObject(Direction.down),
-    DirectionObject(Direction.up),
-    DirectionObject(Direction.right),
-    DirectionObject(Direction.left)
-  ];
+  final DirectionHandler directionHandler = DirectionHandler();
 
-  DirectionObject currentGivenDirection = DirectionObject(Direction.empty);
   Direction currentSensorDirection = Direction.empty;
+  MaterialColor? backgroundColor;
 
-  void _setNewGivenDirection() {
-    int randomIndex = random.nextInt(3);
-    setState(() {
-      currentGivenDirection = directions[randomIndex];
-    });
-  }
+  bool showHelp = false;
 
-  void _evaluateSensorDirection() {
+
+  void _evaluateSensorDirection() async {
     double x = 0;
     double z = 0;
     if (_event != null) {
@@ -146,7 +123,7 @@ class _ESenseScreenState extends State<ESenseScreen> {
       z = _event!.gyro![2].toDouble();
     }
 
-    Direction newDirection = Direction.empty;
+    Direction newDirection;
     if (x > 5000) {
       newDirection = Direction.right;
     } else if (x < -5000) {
@@ -155,57 +132,128 @@ class _ESenseScreenState extends State<ESenseScreen> {
       newDirection = Direction.down;
     } else if (z < -5000) {
       newDirection = Direction.up;
+    } else {
+      newDirection = Direction.empty;
     }
 
+    if(newDirection != Direction.empty) {
+
+      setState(() {
+        needsValues = false;
+        currentSensorDirection = newDirection;
+        backgroundColor = (directionHandler.givenDirection.actualDirection == currentSensorDirection) ? Colors.green : Colors.red;
+      });
+
+
+      await Future.delayed(const Duration(milliseconds: 1000), () {
+        _compareDirections();
+      });
+
+    }
+  }
+
+  Future<void> _compareDirections() async {
+    if (directionHandler.givenDirection.actualDirection == currentSensorDirection) {
+
+      _incrementScore();
+
+    } else {
+
+      _pauseListenToSensorEvents();
+
+      if (_score > _highscore) _highscore = _score;
+
+      Navigator.pushAndRemoveUntil(
+        context, 
+        MaterialPageRoute(builder:(context) => GameOverScreem(score: _score, highscore: _highscore)),
+        ModalRoute.withName('/streambuilder'))
+        .then((value) {
+          _restart();
+        });
+
+        return;
+    }
+
+    if(_score % 4 == 0) {
+      List? changedDirections;
+      setState(() { changedDirections = directionHandler.changeDirections(); });
+      showDialog(context: context, barrierDismissible: false, builder: (context) => RuleDialog(direction1: changedDirections![0], direction2: changedDirections![1])).
+        then((value) {
+          _continuePlaying();
+        });
+
+        return;
+    }
+
+    _continuePlaying();
+  }
+
+  void _continuePlaying() {
     setState(() {
-      currentSensorDirection = newDirection;
+      backgroundColor = null;
+      currentSensorDirection = Direction.empty;
+      directionHandler.createNewGivenDirection();
+      needsValues = true;
     });
   }
 
-  void _incrementCounter() {
-    _counter++;
+  void _incrementScore() {
+    setState(() {
+      _score++;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Game'),
+        title: const Text('HEADACHE'),
       ),
-      body: Column(
-        children: [
-          Text('eSense Device Status: \t$_deviceStatus'),
-          Text(_event.toString()),
-          ElevatedButton(
-              onPressed: () => _connectToESense(), child: Text('Connect')),
-          Center(
-            child: Column(
-              children: [
-                const SizedBox(
-                  height: 100.0,
-                ),
-                Score(
-                  counter: _counter,
-                ),
-                const SizedBox(
-                  height: 100.0,
-                ),
-                ElevatedButton(
+      body: Container(
+        color: backgroundColor,
+        child: Column(
+          children: [
+            //Text('eSense Device Status: \t$_deviceStatus'),
+            //Text(_event.toString()),
+            Center(
+              child: Column(
+                children: [
+                  const SizedBox(
+                    height: 100.0,
+                  ),
+                  Score(
+                    counter: _score,
+                  ),
+                  SizedBox(
+                    width: 400.0,
+                    height: 150.0,
+                    child: Stack(
+                      alignment: Alignment.bottomCenter,
+                      children: [
+                        Positioned(
+                          left: 20,
+                          child: DirectionText(caption: 'Given', direction: directionHandler.givenDirection)
+                        ),
+                        Positioned(
+                          right: 20,
+                          child: DirectionText(caption: 'Input', direction: DirectionObject(currentSensorDirection), color: Colors.blue)
+                        ),
+                      ],)
+                  ),
+                  IconButton(
                     onPressed: () {
-                      _evaluateSensorDirection();
-                      _setNewGivenDirection();
-                    },
-                    child: Text('Test')),
-                Row(
-                  children: [
-                    GivenDirectionText(direction: currentGivenDirection),
-                    Text(currentSensorDirection.toShortString()),
-                  ],
-                ),
-              ],
+                      setState(() {
+                        showHelp = !showHelp;
+                      });
+                    }, 
+                    iconSize: 50,
+                    icon: Icon(showHelp ? Icons.visibility_off_outlined : Icons.visibility_outlined)) ,
+                  showHelp ? DirectionViewer(directionHandler: directionHandler): Container(),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
