@@ -1,18 +1,18 @@
 
-import 'package:esense_application/screens/ingame/screens/esense_screen.dart';
+import 'package:esense_application/ingame/screens/game_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'package:esense_flutter/esense.dart';
 import 'dart:async';
 
-class StreamBuilderScreen extends StatefulWidget {
-  const StreamBuilderScreen({ Key? key }) : super(key: key);
+class ESenseConnectionScreen extends StatefulWidget {
+  const ESenseConnectionScreen({ Key? key }) : super(key: key);
 
   @override
-  State<StreamBuilderScreen> createState() => _StreamBuilderScreenState();
+  State<ESenseConnectionScreen> createState() => _ESenseConnectionScreenState();
 }
 
-class _StreamBuilderScreenState extends State<StreamBuilderScreen> {
+class _ESenseConnectionScreenState extends State<ESenseConnectionScreen> {
 
   final String _eSenseName = "eSense-0864";
 
@@ -38,21 +38,16 @@ class _StreamBuilderScreenState extends State<StreamBuilderScreen> {
 
           switch (snapshot.data!.type) {
             case ConnectionType.connected:
-              return ESenseScreen(connection: snapshot.data!.type);
-            case ConnectionType.unknown:
-              _connectToESense();
-              return const LoadingScreen();
-            case ConnectionType.disconnected:
-              _connectToESense();
-              return const LoadingScreen();
+              return GameScreen(connection: snapshot.data!.type);
             case ConnectionType.device_found:
-              return const LoadingScreen();
-            case ConnectionType.device_not_found:
+              return const LoadingScreen(message: 'Connection found...');
+            default:
               _connectToESense();
-              return const LoadingScreen();
+              return const LoadingScreen(message: 'Connecting to ESense...');
           }
         } else {
-          return const Center(child: Text("Waiting for Connection Data..."));
+          _connectToESense();
+          return const LoadingScreen(message: 'Connecting to ESense...');
         }
       },
     );
@@ -60,7 +55,9 @@ class _StreamBuilderScreenState extends State<StreamBuilderScreen> {
 }
 
 class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({ Key? key }) : super(key: key);
+  const LoadingScreen({ Key? key, required this.message }) : super(key: key);
+
+  final String message;
 
   @override
   Widget build(BuildContext context) {
@@ -71,18 +68,18 @@ class LoadingScreen extends StatelessWidget {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Padding(
-              padding: EdgeInsets.all(20.0),
+              padding: const EdgeInsets.all(20.0),
               child: Text(
-                "Connecting to eSense...",
-                style: TextStyle(
-                  color: Colors.blue,
+                message,
+                style: const TextStyle(
+                  color: Colors.orange,
                   fontSize: 20.0,
                 ),
               ),
             ),
-            const CircularProgressIndicator(),
+            const CircularProgressIndicator(color: Colors.orange),
           ],
         ),
       ),

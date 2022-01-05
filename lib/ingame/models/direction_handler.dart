@@ -1,43 +1,11 @@
 import 'dart:math';
 
-enum Direction {
-  left,
-  right,
-  up,
-  down,
-  empty
-}
-
-extension ParseToString on Direction {
-  String toShortString() {
-    if (this == Direction.empty) {
-      return "___";
-    }
-
-    return toString().split('.').last.toUpperCase();
-  }
-}
-
-class DirectionObject {
-
-  Direction actualDirection;
-  late Direction representativeDirection;
-
-  DirectionObject(this.actualDirection) {
-    representativeDirection = actualDirection;
-  }
-
-  @override
-  String toString() {
-    return representativeDirection.toShortString();
-  }
-}
-
+import 'package:esense_application/ingame/models/direction.dart';
 
 class DirectionHandler {
   
   final Random random = Random();
-
+  static const int _threshold = 5000;
 
   late List<DirectionObject> directions = [
     DirectionObject(Direction.down),
@@ -82,6 +50,20 @@ class DirectionHandler {
     return directions.firstWhere((element) => (element.representativeDirection == dir));
   }
 
+  static Direction evaluateDirection(double x, double z) {
+    Direction newDirection;
+    if (x > _threshold) {
+      newDirection = Direction.right;
+    } else if (x < -_threshold) {
+      newDirection = Direction.left;
+    } else if (z > _threshold) {
+      newDirection = Direction.down;
+    } else if (z < -_threshold) {
+      newDirection = Direction.up;
+    } else {
+      newDirection = Direction.empty;
+    }
 
-
+    return newDirection;
+  }
 }

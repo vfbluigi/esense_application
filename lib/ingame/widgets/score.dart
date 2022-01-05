@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
 
 class Score extends StatelessWidget {
-  const Score({ Key? key, required this.counter}) : super(key: key);
+  const Score({ Key? key, required this.title, required this.counter, this.color}) : super(key: key);
 
+  final String title;
   final int counter;
+  final MaterialColor? color;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-          const Text(
-            'SCORE',
+          Text(
+            title,
             style: TextStyle(
               fontSize: 40.0,
+              color: color,
             )
           ),
           Text(
             '$counter',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 80.0,
+              color: color,
             )
           ),
       ],
