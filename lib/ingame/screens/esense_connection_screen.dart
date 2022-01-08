@@ -31,6 +31,7 @@ class _ESenseConnectionScreenState extends State<ESenseConnectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return StreamBuilder<ConnectionEvent>(
       stream: ESenseManager().connectionEvents,
       builder: (context, snapshot) {

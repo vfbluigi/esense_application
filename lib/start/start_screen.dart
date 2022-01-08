@@ -19,7 +19,9 @@ class StartScreen extends StatelessWidget {
             padding: EdgeInsets.only(bottom: 30),
             child: GameTitle(),
           ),
-          RoundedButton(title: 'START GAME', onPressed: () => Navigator.pushNamed(context, '/streambuilder'),),
+          RoundedButton(title: 'START GAME', onPressed: () => Navigator.pushNamed(context, '/streambuilder'), icon: Icons.play_arrow,),
+          RoundedButton(title: 'SETTINGS', onPressed: () => Navigator.pushNamed(context, '/settings'), icon: Icons.settings),
+          RoundedButton(title: 'ABOUT THE GAME', onPressed: () => Navigator.pushNamed(context, '/about'), icon: Icons.help),
         ],
       ),
     );

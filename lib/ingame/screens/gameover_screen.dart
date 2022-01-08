@@ -4,13 +4,16 @@ import 'package:esense_application/widgets/rounded_button.dart';
 import 'package:flutter/material.dart';
 
 class GameOverScreen extends StatelessWidget {
-  const GameOverScreen({ Key? key, required this.score, required this.highscore }) : super(key: key);
+  const GameOverScreen({ Key? key, required this.score}) : super(key: key);
 
-  final int highscore;
+  static int highscore = 0;
   final int score;
 
   @override
   Widget build(BuildContext context) {
+
+    if(score > GameOverScreen.highscore) GameOverScreen.highscore = score;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('HEADACHE'),
@@ -31,12 +34,12 @@ class GameOverScreen extends StatelessWidget {
                 title: 'SCORE',
                 counter: score,
               ),
-              RoundedButton(title: 'TRY AGAIN', onPressed: () => Navigator.pop(context)),
+              RoundedButton(title: 'TRY AGAIN', onPressed: () => Navigator.pop(context), icon: Icons.refresh),
               RoundedButton(title: 'HOME', onPressed: () {
                 var nav = Navigator.of(context);
                 nav.pop();
                 nav.pop();
-              })
+              }, icon: Icons.home)
             ],
           ),
         ),

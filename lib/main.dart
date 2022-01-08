@@ -1,3 +1,5 @@
+import 'package:esense_application/about/about_screen.dart';
+import 'package:esense_application/settings/settings_screen.dart';
 import 'package:esense_application/start/start_screen.dart';
 import 'package:flutter/material.dart';
 import 'ingame/screens/esense_connection_screen.dart';
@@ -17,6 +19,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const StartScreen(),
         '/streambuilder': (context) => const ESenseConnectionScreen(),
+        '/about': (context) => const AboutScreen(),
+        '/settings': (context) => const SettingsScreen(),
       }
     );
   }

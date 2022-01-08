@@ -6,6 +6,7 @@ import 'package:esense_application/ingame/widgets/direction_display.dart';
 import 'package:esense_application/ingame/widgets/compass.dart';
 import 'package:esense_application/ingame/widgets/rule_dialog.dart';
 import 'package:esense_application/ingame/widgets/score.dart';
+import 'package:esense_application/settings/settings_screen.dart';
 import 'package:esense_flutter/esense.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +14,9 @@ class GameScreen extends StatefulWidget {
   const GameScreen({Key? key, required this.connection}) : super(key: key);
 
   final ConnectionType connection;
+
+  //used in case of sudden connection losses
+  static int savedScore = 0; 
 
   @override
   _GameScreenState createState() => _GameScreenState();
@@ -23,7 +27,6 @@ class _GameScreenState extends State<GameScreen> {
   bool _needsValues = true;
 
   int _score = 0;
-  int _highscore = 0;
 
   final DirectionHandler _directionHandler = DirectionHandler();
   Direction _currentSensorDirection = Direction.empty;
@@ -32,13 +35,11 @@ class _GameScreenState extends State<GameScreen> {
 
   bool _showHelp = false;
 
-  //Constants
-  final int _stepsToNewRule = 4;
-
   @override
   void initState() {
     super.initState();
     _startListenToSensorEvents();
+    if (GameScreen.savedScore != 0) _score = GameScreen.savedScore;
   }
 
   @override
@@ -115,17 +116,16 @@ class _GameScreenState extends State<GameScreen> {
 
       setState(() {
         _score++;
+        GameScreen.savedScore++;
       });
 
     } else {
 
       _pauseListenToSensorEvents();
 
-      if (_score > _highscore) _highscore = _score;
-
       Navigator.push(
         context, 
-        MaterialPageRoute(builder:(context) => GameOverScreen(score: _score, highscore: _highscore)))
+        MaterialPageRoute(builder:(context) => GameOverScreen(score: _score)))
         .then((value) {
           _restart();
         });
@@ -134,12 +134,11 @@ class _GameScreenState extends State<GameScreen> {
     }
 
     //New Rule
-    if(_score % _stepsToNewRule == 0) {
+    if(_score % SettingsScreen.stepsTillRule == 0) {
       List? changedDirections;
       setState(() { changedDirections = _directionHandler.changeDirections(); });
 
       showDialog(context: context, barrierDismissible: false, builder: (context) {
-        //Future.delayed(const Duration(seconds: 3), () => Navigator.of(context).pop(true));
         return RuleDialog(direction1: changedDirections![0], direction2: changedDirections![1]);
       }).
       then((value) {
@@ -166,6 +165,7 @@ class _GameScreenState extends State<GameScreen> {
       _currentSensorDirection = Direction.empty;
       _backgroundColor = null;
       _score = 0;
+      GameScreen.savedScore = 0;
       _directionHandler.reset();
       _needsValues = true;
     });
@@ -183,8 +183,6 @@ class _GameScreenState extends State<GameScreen> {
         color: _backgroundColor,
         child: Column(
           children: [
-            //Text('eSense Device Status: \t$_deviceStatus'),
-            //Text(_event.toString()),
             Center(
               child: Column(
                 children: [
