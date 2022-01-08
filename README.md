@@ -1,16 +1,13 @@
-# esense_application
+# About HEADACHE
 
-A new Flutter project.
+This is an flutter-project created for the lecture "Mobile Computing and Internet of Things" at KIT in WS21/22.
+It uses the gyro-sensors of ESense-Earables. <br/>
+It is a game where you have to move your head in the direction displayed on the screen.
+During the game rules are announced. A rule switches two directions.
+The longer the game the more complicated it gets. <br/>
+The headache after playing the game is guaranteed!
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+You can get started with the esense library here.
+https://pub.dev/packages/esense_flutter
